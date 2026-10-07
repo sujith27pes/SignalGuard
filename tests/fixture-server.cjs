@@ -1,0 +1,3 @@
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
+const routes={'/':'gmail-fixture.html','/fixture.js':'gmail-fixture.js','/engine.js':'../extension/engine.js','/gmail-adapter.js':'../extension/gmail-adapter.js','/content.js':'../extension/content.js'};
+http.createServer((req,res)=>{const file=routes[req.url];if(!file){res.writeHead(404);res.end();return}res.writeHead(200,{'Content-Type':file.endsWith('.html')?'text/html; charset=utf-8':'text/javascript; charset=utf-8','Cache-Control':'no-store'});fs.createReadStream(path.resolve(__dirname,file)).pipe(res)}).listen(8788,'127.0.0.1',()=>console.log('Adapter fixture: http://127.0.0.1:8788'));

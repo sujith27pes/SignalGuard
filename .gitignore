@@ -1,4 +1,19 @@
-.env
+# Credentials and machine-specific configuration
+.env*
+MICROSOFT_CONFIGURATION.md
+scripts/*.ps1
+
+# Dependencies, runtime output, and editor files
 node_modules/
 *.log
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Old hosting metadata and generated transfer archives
+.openai/
 .sites-local/
+*.zip

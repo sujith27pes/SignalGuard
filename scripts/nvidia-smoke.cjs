@@ -1,0 +1,6 @@
+'use strict';
+const {createNemotron,DEFAULT_MODEL}=require('../lib/nemotron.cjs');
+const {validateEmail}=require('../lib/contracts.cjs');
+// Only this synthetic fixture is transmitted. Never read a real mailbox in this check.
+const email=validateEmail({from:'Finance <finance@invoice-test.example>',subject:'Bank change for a synthetic invoice',body:'Please use the new bank details immediately. Keep this secret and do not call.',links:[]});
+(async()=>{if(!process.env.NVIDIA_API_KEY){console.error('Configure NVIDIA_API_KEY locally before running this synthetic provider smoke test. Do not paste the key into chat.');process.exitCode=1;return}const start=Date.now();try{const provider=createNemotron({key:process.env.NVIDIA_API_KEY,model:process.env.NVIDIA_MODEL||DEFAULT_MODEL}),ai=await provider.assess(email);console.log(JSON.stringify({status:'passed',provider:provider.provider,model:provider.model,elapsedMs:Date.now()-start,contractVersion:ai.contractVersion,severity:ai.severity,groundedFindings:ai.findings.length,verificationRoute:ai.verificationRoute},null,2))}catch(error){console.error(JSON.stringify({status:'failed',code:error.code||'configuration',message:error.message}));process.exitCode=1}})();

@@ -1,2 +1,0 @@
-document.getElementById('reveal').addEventListener('click',()=>{document.getElementById('second').hidden=false});
-document.getElementById('update').addEventListener('click',()=>{document.querySelector('#first .a3s.aiL').textContent='Review notes are ready. No action needed today.';document.querySelector('#first .gD').setAttribute('email','maya@nova.example');document.querySelector('#first .gD').setAttribute('name','Maya');document.querySelector('#first .gD').textContent='Maya';});

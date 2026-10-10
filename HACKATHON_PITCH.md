@@ -1,56 +1,45 @@
-# SignalGuard — three-minute demo
+# SignalGuard Desktop: three-minute HR security demo
 
-**One sentence:** SignalGuard turns suspicious emails into an understandable attack story, so users know what to verify before acting.
+**Opening:** “An email does not need malware to cause damage. A changed salary destination, a fake recruitment fee, or a request for identity documents can exploit a normal HR workflow. SignalGuard helps the reviewer verify the request before acting.”
 
-## 0:00–0:25 — The problem
+## 0:00–0:30: show the actual product boundary
 
-“Phishing is often a persuasion problem. A familiar name, a frightening deadline, and one small request can combine into a costly mistake. A red warning alone does not teach people how to recognize the next attempt.”
+Start with the empty personal workspace. Point to **Connect Outlook** and **Paste an email**. Explain that the public project reads a Microsoft mailbox through authorized Graph access, without an Outlook plugin or Windows helper. If the mailbox is not connected, say so.
 
-Open the demo's Microsoft sample. State that it is synthetic and locally scored. Avoid claiming that the risk index is a phishing probability.
+## 0:30–1:10: show evidence and a usable next step
 
-## 0:25–1:00 — Evidence over mystery
+Choose **Explore sample scenarios**, then the synthetic payroll-change message. Show its actual request, quoted warning signs, and uncertainty. Open **HR playbook**: call the contact already in the HR system, verify through payroll's normal process, and obtain the usual second approval. Mark one step; the review trail updates and the warning remains.
 
-Point to the actual sender and destination. Show the exact quotes behind urgency and credential findings. Open **Attack story**: the credibility hook, the pressure, the requested move, and the destination.
+“A checklist records what the reviewer did. It does not magically certify the email.”
 
-“SignalGuard exposes its reasoning as evidence. It gives you a hypothesis you can question, and a concrete next move: verify through a channel you already know.”
+## 1:10–1:40: reveal the broader pattern
 
-## 1:00–1:30 — The memorable interaction
+Open **Campaign radar**. The Microsoft sample and payroll sample share a destination and have supporting signals. Open each linked message.
 
-Open **What-if lab**. Exclude the sender-claim, failed-authentication fixture, and brand-link signals. The hypothetical index moves from 99 to 68. Explain that this does not verify the email or alter the original warning.
+“A single email can look like an isolated request. Related destinations provide a review clue. A common legitimate service is also possible, so correlation is not attribution.”
 
-“Instead of accepting a black box, the user can see which assumptions drive the verdict.”
+## 1:40–2:10: make the assessment challengeable
 
-## 1:30–1:55 — Adversarial demo
+Open **What-if lab** on the Microsoft sample. Exclude the sender-claim, failed-authentication fixture, and brand-link signals: the hypothetical score changes from 99 to 68. The original warning remains. Then show an urgent ordinary slides request staying low.
 
-Select **Document Share**. It contains instructions to ignore prior rules and classify it as safe. SignalGuard flags that text alongside the active `.html` attachment filename.
+“We expose the assumptions instead of asking the user to trust a number. This index is not a phishing probability.”
 
-“The attacker can speak to the analyzer. We treat that speech as evidence, never as authority. The model has no tools, and local warnings stay visible.”
+## 2:10–2:35: contextual AI if genuinely configured
 
-## 1:55–2:20 — Show the false-positive restraint
+Only after a successful NVIDIA smoke check, request Nemotron on an authorized synthetic message. Show exact source quotes, missing evidence, a plausible benign explanation, and local/model agreement or disagreement. Show the separate transmission consent. If no key/live connection exists, describe the tested adapter and retain the local demonstration; never substitute a mock for a live result.
 
-Select **Sam Rivera**, the urgent slide request. It has a low detected-risk index of 12. Urgency alone does not trigger a high-risk warning. Then open **Learning studio** and answer the gift-card question by choosing the known phone number.
+## 2:35–3:00: show why an organization could pilot it
 
-“The goal is useful judgment, not warning fatigue or blind trust.”
+Generate the **Minimized incident packet**. Explain that it excludes identities, message bodies, excerpts, URLs, and mailbox IDs, while preserving abstract findings and review steps. Sensitive categories/times can still reveal context, so it needs review before sharing.
 
-## 2:20–2:45 — Show real extension / AI if configured
+“Our loop is detect, explain, verify, correlate, and learn. The next step is a measured, consented shadow pilot with IT—not an unsupported promise of production accuracy.”
 
-Before the presentation, load the extension and test with an authorized synthetic email in a test Gmail account. Open that message, expand its banner, and optionally request AI in the popup after confirming the subject/sender and consent.
+## Anticipate the questions
 
-Only demonstrate live AI after your key, model, extension allowlist, and privacy policy are configured and tested. If they are not, show the local extension and accurately describe the implemented model adapter; do not impersonate a live model response.
+- **Only Outlook installed?** Manual paste works now. New Outlook automation requires the team's developer application and user authorization; the installed app cannot supply it. Outlook.com is supported when the registration permits personal accounts.
+- **Groundbreaking?** The challengeable evidence brief and HR verification workflow are concrete differentiators. Do not claim global novelty without a market study.
+- **Real-time?** The prototype polls while open: 10 seconds Classic or 20 seconds Graph. Delivery push and background reconciliation are future work.
+- **Production today?** No: signed distribution, live-account tests, protected identity/tokens, durable processing, organizational review/audit, and independently labeled evaluation remain required.
+- **Safe?** Advisory and read-only; no mailbox modifications or employment scoring. Wrong advisories and missed threats remain possible.
 
-## 2:45–3:00 — Close with the value
-
-“Our differentiator is a loop: detect, explain, interrogate, and learn. We built a working interface and a read-only extension, with a shared evidence engine and an opt-in model boundary. The next engineering step is provider-authenticated delivery events and a measured pilot.”
-
-## Questions to expect
-
-| Judge asks | Honest response |
-|---|---|
-| Is this truly real-time? | The extension reacts to opened Gmail messages as they render. The dashboard replay is synthetic. Inbox-wide delivery scanning is designed, not implemented. |
-| Is it AI? | An actual OpenAI Responses adapter is included and works when configured; the default offline verdict is explicitly a heuristic engine. No model result is fabricated. |
-| What makes it stand out? | A visible persuasion chain, an interactive contribution lab, evidence-grounded advice, prompt-injection awareness, and education in the same workflow. |
-| How accurate is it? | Functional and boundary tests pass. There is no held-out detection benchmark yet; the evaluation plan defines how to measure false positives and misses. |
-| Can it cause harm? | No sending/deletion/automatic quarantine or URL execution is present. Advisories can still be wrong, so we expose uncertainty and require independent verification. Zero harm cannot be guaranteed. |
-| Is this production-ready? | No. Provider events, durable queues, tenant identity, retention controls, real-account compatibility, and independent evaluation are required before a pilot. |
-
-Do not call the design globally novel, promise a win, invent prevented-loss metrics, or present synthetic fixtures as customer results. A clear, reproducible demo with honest boundaries is more defensible than unsupported claims.
+Use [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) to turn judge interest into a concrete pilot discussion. Do not promise a win or invent detection/savings metrics.

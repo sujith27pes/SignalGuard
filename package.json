@@ -1,1 +1,14 @@
-{"name":"signalguard","version":"1.0.0","private":true,"description":"Explainable email security hackathon prototype","scripts":{"start":"node server.cjs","test":"node --test tests/*.test.cjs"},"engines":{"node":">=20"}}
+{
+  "private": true,
+  "description": "Outlook desktop email security with HR verification workflows and NVIDIA Nemotron",
+  "version": "3.0.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "name": "signalguard-desktop",
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "smoke:nvidia": "node scripts/nvidia-smoke.cjs"
+  }
+}

@@ -1,82 +1,100 @@
-# SignalGuard system design
+# SignalGuard Desktop system design
 
 ## Product contract
 
-Help a person understand a suspicious request before acting. Assessment must expose evidence, uncertainty, coverage, and the next verification step. Never convert “no known warning” into “safe.” Never silently transmit email or perform a consequential mailbox action.
+The public repository supports Microsoft Graph and manual input. Windows PowerShell helpers are excluded from version control; Classic Outlook details below describe the local prototype adapter, not a dependency of the documented setup.
 
-The hackathon differentiation is **explainability that changes behavior**: an attack story, a counterfactual lab, inert link inspection, and contextual education. These are implemented interactions, not accuracy claims. They do not establish that the idea is globally novel or guarantee a competition result.
+Assess risky requests in Outlook email and pasted text, explain the evidence, and guide independent verification. This is message-security assistance, not candidate/employee scoring. A sensitive HR workflow can be legitimate. No absence of findings, checkbox, model agreement, or incident packet establishes safety.
 
-## Implemented architecture
+## Implemented boundaries
 
 ```mermaid
 flowchart LR
-  A[Pasted text / basic EML] --> N[Bounded normalization]
-  G[Visible Gmail message] --> X[Read-only content adapter]
-  X --> N
-  N --> E[Shared versioned evidence engine]
-  E --> U[Risk index + exact evidence]
-  U --> H[Human verification]
-  U --> L[Attack story / what-if / lessons]
-  C[Explicit per-message AI consent] --> S[Loopback Node service]
-  S --> V[Size, origin, token, concurrency checks]
-  V --> M[OpenAI Responses API; no tools]
-  M --> Q[JSON schema + exact-quote validation]
-  Q --> O[Advisory second opinion; local warnings retained]
+  C[Classic Outlook local Object Model] --> S[Source coordinator]
+  G[Microsoft Graph delegated Mail.Read] --> S
+  S --> B[Session buffer / 200-message bound]
+  B --> U[Local companion interface]
+  P[Manual paste / basic text import] --> U
+  U --> E[Shared local evidence engine]
+  U --> H[HR sensitivity + verification playbooks]
+  E --> R[Campaign correlation / attack story / what-if]
+  H --> V[User review checklist]
+  V --> X[Minimized incident packet]
+  U --> N[Separate per-message AI consent]
+  N --> A[Loopback service / contract / admission controls]
+  A --> M[NVIDIA Nemotron; no tools]
+  M --> Q[Exact-field quote validation]
+  Q --> U
 ```
 
-The dashboard and extension share `engine.js`, preventing divergent scoring. The adapter handles extraction; the engine handles findings; the view handles rendering and user decisions. The AI boundary is separate from both. The engine is deterministic and offline; provider availability does not control whether local evidence is shown.
+The companion is a local Node service with a browser UI. It is not a packaged native executable, background Windows service, or Outlook add-in. The former Gmail plugin is archived outside the active project and excluded from the desktop release.
 
-## Contracts and data handling
+## Separation of responsibilities
 
-Input: sender, reply-to, subject, message text, bounded link labels/URLs, and optional attachment names. Authentication is unknown unless the input is an explicitly identified demo fixture. The public local service accepts no claimed trusted authentication state.
+| Boundary | Responsibility |
+|---|---|
+| `server.cjs` | Loopback HTTP, Host/Origin restrictions, session token, request limits, static assets |
+| `outlook.cjs` | Connection lifecycle, source epochs, synchronization admission, ID/content hashes, bounded buffer |
+| `outlook-graph.cjs` | Fixed Microsoft endpoints, public-client device flow, token interval/expiry, delta paging/cooldown |
+| `Read-Outlook.ps1` | Local Classic Object Model extraction only; no changes to messages |
+| `engine.js` | Deterministic risk signals, quotes, weights, inert destination parsing |
+| `hr-engine.js` | Sensitive workflows, fixed verification steps, correlation, minimized export |
+| `desktop.js` | Personal/demo separation, local review state, presentation and explicit actions |
+| `contracts.cjs` | Bounded AI inputs, exact output keys, enums, source-grounded quotes, fixed advice routes |
+| `nemotron.cjs` | Fixed NVIDIA transport, bounded response interpretation, timeout and error contract |
+| `assessment-service.cjs` | Concurrent duplicate sharing, budgets, circuit breaker, body-free health counters |
 
-Output: engine version, source label, weighted index, ordinal level, supporting-signal description, per-signal evidence/explanation/advice, inert URL records, measured local latency, and limitations. Supporting-signal descriptions are not statistically calibrated confidence values. Risk levels: Low <30, Caution 30–64, High ≥65; cap at 99. Thresholds are prototype choices pending evaluation.
+Factories inject providers, readers, clocks, and fetch implementations. Tests exercise failures without mailbox credentials or external requests. Modules know only the contracts at adjacent boundaries.
 
-Session data stays in browser memory. Reload clears it. Extension assessment state uses a WeakMap tied to rendered message nodes, with no persistent storage. A requested evidence export contains sender addresses and excerpts; it must be reviewed before disclosure. The local service does not log message bodies or API keys. Google Fonts requests contain no email content; deploying in a strict offline environment can replace the CSS font import with system fonts.
+## Mailbox lifecycle and correctness
 
-## Threat model and implemented controls
+New Outlook does not expose local OOM. Graph reads the same Microsoft 365/Outlook.com Inbox through the user's permission. Installed Outlook credentials/cache are not extracted. The application owner must register a public-client identity supporting the desired account types; the prototype does not borrow a third-party application ID or bundle a secret.
 
-| Threat | Implemented control | Residual risk |
+Device code and access token remain server-side. The browser receives only the temporary user code and an allowlisted Microsoft verification URL from the identity response (personal accounts use www.microsoft.com/link). The identity request asks for delegated Mail.Read, with no client secret or offline_access. The access token is kept in process memory until disconnect/expiry. Reconnect is needed after expiry. No durable token store or refresh flow is implemented.
+
+Graph starts with a received-time filter for seven days, selects bounded necessary fields, requests plain-text bodies, and follows next/delta links. Cursors are restricted to HTTPS Microsoft Graph message-delta resources; redirects are rejected. Four pages maximum are processed per sync. The checkpoint advances only after the complete bounded batch succeeds. A later page failure replays earlier pages next time rather than losing them. Stable message IDs make replayed records upserts. Removed events delete only the local copy. No request changes a remote mailbox.
+
+Classic uses the default profile's Inbox: latest 50 messages within seven days, 10-second polling. Graph polls every 20 seconds while the UI is open. Polling is not instantaneous delivery push and provides no universal latency SLA. Classic can miss a burst beyond its snapshot window; it does not reconcile remote removals. Graph's bounded initial scan can span multiple polls. Other folders/shared mailboxes are not covered.
+
+The source coordinator retains the 200 newest records, hashes raw mailbox IDs before exposing UI IDs, and hashes normalized content for update detection. Unchanged content keeps client review state. Changed content replaces the client assessment and clears its prior model opinion/checklist, preventing stale approvals from attaching to new text. A source generation/epoch prevents a late read from repopulating the buffer after disconnect. Starting a new connection clears prior imported records; manual input remains separate.
+
+There is one mailbox connection per local process, not tenant isolation. The process is designed for one user on one device. Multiple browser tabs can share that connection. Local operating-system compromise is outside its protection boundary.
+
+## Human-facing safeguards
+
+- Risk index is weighted and capped at 99, not a probability. Low/Caution/High thresholds are prototype decisions pending evaluation.
+- Bank-account updates are financial signals rather than fabricated credential requests. Urgency alone remains below Caution in the test fixture.
+- HR context flags do not add phishing weights or classify people's eligibility. Legitimate passport requests can receive a sensitivity flag without an invented malicious verdict.
+- Playbooks propose a known contact and existing approved workflow. There is no HRIS/contact-directory integration; the user performs verification.
+- Checkmarks and session holds never clear risk or modify mail. Their trail is user-entered and not tamper-proof.
+- Campaign radar requires at least two messages sharing a destination and existing supporting signals. It reports correlation, not confirmed campaign attribution. Common legitimate services and duplicate manual copies can produce correlation.
+- Synthetic scenarios live in a distinct workspace and never merge into a live mailbox count/correlation view.
+- Model grades may raise a displayed badge with a Nemotron source label, but cannot lower the local grade/index. Agreement, disagreement, and abstention are visible.
+
+## Privacy and resource controls
+
+| Principle | Implementation | Limit |
 |---|---|---|
-| Malicious HTML / active links | Dashboard escapes text; extension uses textContent; links are inert; files are not executed | Gmail itself renders its own content; prototype does not replace Gmail protections |
-| Prompt injection | Fixed system instruction, email as data, no model tools, injection signal, quote checks, local warnings retained | A model may still reason poorly or follow an embedded instruction; quote validation is not semantic verification |
-| Forged trust headers | Authentication unknown outside sample fixtures | Provider-authenticated results are unavailable in current UI extraction |
-| Local service exposed to websites | Loopback binding, Host/Origin checks, browser session token, restricted CORS for one configured extension | Other software with access to the user's device is outside this demo boundary |
-| Cross-site request / DNS rebinding | Exact loopback Host check, same-origin policy, exact allowlisted extension origin | A compromised allowed extension/browser can reach the service |
-| Resource exhaustion / provider costs | Input limits, two model calls in flight maximum, one-second request spacing, 25-second upstream timeout, output cap | Not a distributed or durable production quota system |
-| Hallucinated evidence | Strict JSON schema, exact quote validation, bounded strings, explicit model provenance | Grounded quotes can still support wrong conclusions |
-| Irreversible false-positive action | No delete, mail send, server quarantine, reporting, or blocking | A misleading advisory can influence a user; evaluate and communicate uncertainty |
-| Missing signal / false negative | No safety guarantee; limits visible; low-risk text encourages verification when unexpected | Existing rules cover a limited English pattern set |
+| Data minimization | Necessary text fields, Inbox scope, bounded initial window, no attachment-content retrieval | Bodies can contain sensitive information; scope/permission still matters |
+| Separate consent | Mailbox read authorization and NVIDIA transmission are distinct; sensitive HR context is included in AI consent | Organizational sharing policy must be reviewed outside this prototype |
+| Ephemeral state | Tokens/checkpoints/mail records in process memory; manual input/review in browser memory | Reload can re-import an existing process buffer; close/restart the service to end its session |
+| Safe rendering | Escaped text, inert message URLs, no HTML/attachment execution | Does not replace Outlook's own protections |
+| HTTP boundary | Loopback, exact Host/Origin, session token on all Outlook controls, 4 KB control limit and 70 KB AI request limit | A compromised allowed local origin/device can access the service |
+| Bounded resources | 200 server records, 100 manual messages, 50,000-character text fields, 8 MB Microsoft response bound, four pages per read | No production load/cost benchmark |
+| Resilience | Sync failure retains available evidence; cancellation epochs; Microsoft 429 cooldown; no hidden safety fallback | Sync checkpoints and budgets are per-process, not durable/distributed |
+| AI availability | Two unique concurrent calls, twenty starts/minute, duplicate sharing, 45-second provider timeout, cooldown/circuit breaker | These are local settings, not NVIDIA entitlement or free-tier quota |
+| Reviewed actions | Model chooses a fixed verification route; arbitrary model action instructions are not executed | Grounded explanations and advice remain fallible |
+| Export minimization | Abstract findings/review only; no sender, subject, body, quotes, URLs, or mailbox IDs | Categories/timestamps can still reveal context; not guaranteed anonymization |
+| Observability | Last successful sync, coverage/buffer bound, errors, AI request IDs/model/contract/latency, body-free counters | No protected enterprise telemetry pipeline yet |
 
-## Real-time semantics
+Programmatic Outlook warnings, unsigned-script restrictions, Microsoft admin consent, and Conditional Access are respected. No policy is disabled. Detection failures report uncertainty rather than confidently claiming a client is absent.
 
-The extension observes DOM changes and schedules scans after a 350 ms debounce. It skips hidden message bodies and rescans only when extracted content changes. Actual analysis latency is measured per message. Rendering, machine load, and DOM size affect perceived latency; no universal latency SLA is claimed.
+## Production architecture and gates — planned, not implemented
 
-The dashboard replay introduces a fixture every two seconds. This is a synthetic arrival stream. It is not evidence of provider delivery integration. The actual optional AI request is user-triggered, not an automatic delivery-time pipeline.
+A signed desktop distribution should register the team's verified developer identity once and offer ordinary user sign-in. Prefer MSAL with the Windows broker/authorization-code PKCE for an organizational rollout; device-code is the prototype path and may be prohibited by Conditional Access. Enforce account/tenant binding, token protection, authenticated per-user APIs, and revocation. Do not store tokens in browser localStorage.
 
-## Production delivery-time architecture — not yet implemented
+Delivery-time processing needs authenticated provider subscriptions, renewal/reconciliation, a durable queue, idempotency keys including tenant/message/content/engine versions, bounded retries with jitter, dead-letter handling, and tenant-scoped worker budgets. Duplicate deliveries must upsert assessments without repeated consequential actions. Partition persisted metadata by tenant and encrypt records with short, explicit retention.
 
-1. **Provider adapter:** authorized Gmail/Graph delivery events with minimal read scopes, provider-managed identity, revocable consent, and authenticated subscription setup. Renew subscriptions and reconcile missed events. Do not grant sending/deleting scopes for an advisory product.
-2. **Event boundary:** verify provider authenticity, validate event shape, immediately acknowledge valid events, and enqueue a metadata reference. Store OAuth tokens only in a managed encrypted vault; never in browser storage or the queue body.
-3. **Durable queue:** at-least-once delivery, idempotency key `(tenant, provider, message ID, content/version hash, engine version)`, exponential retry with jitter, bounded attempts, dead-letter queue, and a reconciliation job. Assessments are upserts, not repeated side effects.
-4. **Normalization workers:** retrieve only required content; bound MIME depth, decoded size, and attachment count; sanitize display text; trust authentication only from verified provider metadata. Do not trust headers supplied by arbitrary senders or imported messages.
-5. **Local/fast assessment:** publish deterministic evidence promptly. Scale stateless workers horizontally using queue depth and oldest-event age. Cache versioned assessments with a short tenant-scoped TTL. Do not cache or share sensitive content across tenants.
-6. **Optional model tier:** tenant-approved policy and legal data-handling terms; minimize/redact content where practical, version redaction mappings, and ground quotes after mapping. Enforce durable per-tenant budgets, concurrency, request deduplication, timeouts, circuit breakers, and explicit abstention. Model failure retains the available assessment.
-7. **Review surface:** authenticated, tenant-isolated API and event updates via SSE/WebSocket. Show local/model source, freshness, scope, status, conflicts, and uncertainty. Human review precedes any later mailbox-changing feature.
-8. **Storage:** encrypt persisted records, separate raw messages from derived metadata, enforce tenant ownership on every request, configure retention and deletion, and use audit records without message bodies. Raw bodies should have the shortest feasible retention. Do not create an “organization trust graph” without consent and a validated provenance model.
+Review/learning records need organizational identity, integrity protection, access roles, and retention—not the current local event array. HRIS/approved-contact verification requires a separately authorized integration with provenance. Attachments/OCR/reputation are isolated future components and should not be bolted into a privileged mailbox worker.
 
-These boundaries provide separation of concerns, least privilege, explicit trust transitions, idempotency, resilience, horizontal scale, and observable failure. They are a plan; infrastructure code for this provider pipeline is not included.
-
-## Evaluation before pilots
-
-Build an independently labeled, consented corpus with benign urgency, ordinary password resets, newsletters, legitimate third-party links, business email compromise, lookalike domains, QR attacks, prompt injection, multiple languages, and compromised legitimate senders. Split by campaign/domain/time to prevent leakage. Keep synthetic fixtures separate from held-out real samples.
-
-Report class-specific precision/recall, false-positive rate on legitimate mail, missed high-impact requests, abstention/coverage, score calibration if probabilities are introduced, explanation-grounding rate, and subgroup/language performance. Use PR curves and cost-sensitive threshold selection instead of headline “accuracy.” Measure provider/event-to-assessment p50/p95/p99 latency, replay success, queue age, timeout rate, and cost per assessment. Track learning outcomes with an ethical consented study; do not claim improved behavior from an interactive quiz alone.
-
-Suggested acceptance targets must be negotiated with pilot stakeholders using observed results; no target is represented here as achieved. Include review of user confusion, accessibility, and the possibility that education itself increases overconfidence.
-
-## Validation performed
-
-Automated tests exercise score patterns, urgency-only false-positive control, safe-message wording, namespace lookalikes, prompt injection, untrusted authentication, actual-vs-visible URLs, active filenames, bounded URL parsing, text import, capped counterfactual arithmetic, scoped Gmail extraction, extension permission minimization, model output grounding, consent, hostile origins/Host/path traversal, schema settings, and provider failure handling.
-
-Browser checks exercise custom input, inert HTML and links, evidence/story/passport tabs, changing hypothetical weights, a session-only review queue, learning feedback, and responsive layouts. Provider responses are mocked; live AI quality and real Gmail compatibility remain unverified until configured and tested by the project team.
+See [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for the evidence required before a pilot. Functional tests do not establish accuracy, latency targets, reduced losses, or production readiness.
